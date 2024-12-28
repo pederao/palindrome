@@ -1,4 +1,4 @@
-# Palindromic pandemonium
+# Palindromic Pandemonium
 
 This project explores representations of fractions as sums of (unit) reciprocal palindromes such as
 
