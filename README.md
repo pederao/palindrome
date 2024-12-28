@@ -14,4 +14,4 @@ $$
 a_1+a_2+a_3+\sum_{i=4}^n \frac{1}{a_i}
 $$
 
-with $\{a_i\}_}{i=1}^n$ being distinct palindromes. This code-base supports exploration of these statements.
+with $\{a_i\}_{i=1}^n$ being distinct palindromes. This code-base supports exploration of these statements.
