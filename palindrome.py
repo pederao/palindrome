@@ -95,6 +95,9 @@ def next_pal(n):
     
 
 def pal_iterator_(n_digits, first=None, last=None):
+    """
+    Iterate over palindromic integers with n_digits between first and last.
+    """
     is_odd = n_digits%2
     n_free = n_digits//2 + is_odd
     nn = n_digits-1
