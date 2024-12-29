@@ -39,18 +39,32 @@ class TestPalindrome(unittest.TestCase):
         self.assertEqual(palindrome.prev_pal(1), 0)
 
     def test_3_pal_iterator(self):
-        first = 53
-        last = 10**5-first
-        sum1 = 0
-        for i in range(first, last):
-            if is_palindromic(i):
-                sum1 += i
-        sum2 = 0
-        for n in palindrome.pal_iterator(first, last):
-            sum2 += n
-        self.assertEqual(sum1, sum2)          
-
-        
+        test_cases = [(53,9999), (123, 1010), (10, 1000), (9, 999)]
+        for first, last in test_cases:
+            sum1 = 0
+            for i in range(first, last):
+                if is_palindromic(i):
+                    sum1 += i
+            sum2 = 0
+            for n in palindrome.pal_iterator(first, last):
+                sum2 += n
+            #print(first, last, sum1, sum2)
+            self.assertEqual(sum1, sum2)
+       
+    def test_4_pal_div_iterator_(self):
+        test_cases = [(67, 9, 9_999_999), 
+                      (81, 99_999_999, 10**9), 
+                      (43, 10**6, 10**7)]
+        for n, first, last in test_cases:
+            #print(n, first, last)
+            sum1 = 0
+            for i in palindrome.pal_iterator(first, last):
+                if i%n==0:
+                    sum1 += i
+            sum2 = 0
+            for i in palindrome.pal_div_iterator(n, first, last):
+                sum2 += i
+            self.assertEqual(sum1, sum2) 
 
 
 if __name__ == '__main__':
