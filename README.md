@@ -81,6 +81,7 @@ For some of these primes, twice the prime is also on the list of missing represe
 
 For some of the missing numbers the shortest reciprocal palindromic representations has the form $\frac{k}{p}$ with $p$ being a palindrome. For example
 
+$$
 \begin{eqnarray*}
 \frac{1}{379} &=& \frac{22}{8338}\\
 \frac{1}{389} &=& \frac{22}{8558}\\
@@ -97,6 +98,7 @@ For some of the missing numbers the shortest reciprocal palindromic representati
 \frac{1}{922} &=& \frac{31}{28582}\\
 \frac{1}{997} &=& \frac{39}{38883}\\
 \end{eqnarray*}
+$$
 
 Possibly for these numbers the issue is that the density of palindromes that are a multiple of the denominators is very low. I have not checked this, but it would be easy to do.
 
