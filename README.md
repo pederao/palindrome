@@ -82,22 +82,22 @@ For some of these primes, twice the prime is also on the list of missing represe
 For some of the missing numbers the shortest reciprocal palindromic representations has the form $\frac{k}{p}$ with $p$ being a palindrome. For example
 
 $$
-\begin{eqnarray*}
-\frac{1}{379} &=& \frac{22}{8338}\\
-\frac{1}{389} &=& \frac{22}{8558}\\
-\frac{1}{419} &=& \frac{2}{838}\\
-\frac{1}{449} &=& \frac{2}{898}\\
-\frac{1}{461} &=& \frac{62}{28582}\\
-\frac{1}{673} &=& \frac{92}{61916}\\
-\frac{1}{677} &=& \frac{11}{7447}\\
-\frac{1}{758} &=& \frac{11}{8338}\\
-\frac{1}{778} &=& \frac{11}{8558}\\
-\frac{1}{839} &=& \frac{11}{9229}\\
-\frac{1}{841} &=& \frac{43}{36163}\\
-\frac{1}{859} &=& \frac{11}{9449}\\
-\frac{1}{922} &=& \frac{31}{28582}\\
-\frac{1}{997} &=& \frac{39}{38883}\\
-\end{eqnarray*}
+\begin{aligned}
+\frac{1}{379} &= \frac{22}{8338}\\
+\frac{1}{389} &= \frac{22}{8558}\\
+\frac{1}{419} &= \frac{2}{838}\\
+\frac{1}{449} &= \frac{2}{898}\\
+\frac{1}{461} &= \frac{62}{28582}\\
+\frac{1}{673} &= \frac{92}{61916}\\
+\frac{1}{677} &= \frac{11}{7447}\\
+\frac{1}{758} &= \frac{11}{8338}\\
+\frac{1}{778} &= \frac{11}{8558}\\
+\frac{1}{839} &= \frac{11}{9229}\\
+\frac{1}{841} &= \frac{43}{36163}\\
+\frac{1}{859} &= \frac{11}{9449}\\
+\frac{1}{922} &= \frac{31}{28582}\\
+\frac{1}{997} &= \frac{39}{38883}\\
+\end{aligned}
 $$
 
 Possibly for these numbers the issue is that the density of palindromes that are a multiple of the denominators is very low. I have not checked this, but it would be easy to do.
