@@ -4,6 +4,7 @@ Module for palindrome related functions and classes.
 ITERATORS:
 - `square_divisors`: Iterate over the divisors of n^2.
 - `palindrome_divisors`: Iterate over the palindromic divisors of a number.
+- `farey_sequence`: Iterate over all reduced fractions with denominator <=n.
 
 - `pal_iterator_`: Iterate over palindromic integers with a given number of digits.
 - `pal_iterator`: Iterate over palindromic integers in a range.
@@ -33,9 +34,6 @@ ITERATORS:
 - `egyptian_pal_iterator_r`: Iterate over palindromic solutions to
                               $r=1/p_1+1/p_2+...+1/p_k$ with $p_1<p_2<...<p_k$.
 
-DATABASES:
-
-
 SOLVERS:
 
 HELPER FUNCTIONS:
@@ -44,15 +42,11 @@ HELPER FUNCTIONS:
 - `pal_ceil`: Find the smallest palindromic number greater than or equal to a number.
 - `next_pal`: Find the smallest palindromic number greater than a number.
 """
-import sys, os
-import json
 import sympy
-from sympy import factorint, init_printing, symbols, Rational
+from sympy import factorint, Rational
 from sympy.ntheory import is_palindromic
 import itertools
-from itertools import product
-from collections import defaultdict
-from typing import List, Tuple, Dict, Any, Union, Iterator
+from typing import List, Tuple, Iterator
 
 def pal_floor(n: int) -> int:
     """
@@ -119,6 +113,7 @@ def next_pal(n: int) -> int:
     else:
         return(pal_ceil(n))
     
+    
 def palindrome_divisors(n: int, min_value: int=1) -> Iterator[int]:
     """
     Return the palindromic divisors of n that are larger than min_value.
@@ -153,6 +148,31 @@ def square_divisors(n: int, proper:bool=False)->Iterator[int]:
                 yield p
     else:
         yield from rec_gen()
+
+
+def farey_sequence(n: int, small_only: bool = False, omit_zero: bool = True) -> Iterator[Rational]:
+    """
+    Generate all reduced fractions a/b with 0<=a<=b<=n according to the Farey 
+    sequence algorithm.
+    If small_only is True, only fractions with a<=b are generated.
+    USAGE:  `for r in farey_sequence(n):`
+    """
+    a, b, c, d = 0, 1, 1, n
+    # skipping 0 as it is not interesting
+    if not omit_zero:
+        yield Rational(a,b)
+    while 0 <= c <= n:
+        k = (n + b) // d
+        a, b, c, d = c, d, k * c - a, k * d - b
+        yield Rational(a, b)
+    if not small_only:
+        a, c = 1, n - 1
+        while 0 <= c <= n:
+            k = (n + b) // d
+            a, b, c, d = c, d, k * c - a, k * d - b
+            if a>0:
+                yield Rational(b, a)
+
 
 def reciprocal_pair_iterator_r(r: Rational) -> Iterator[Tuple[Rational, Rational]]:
     """
