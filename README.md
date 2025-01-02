@@ -100,6 +100,37 @@ $$
 \end{aligned}
 $$
 
-Possibly for these numbers the issue is that the density of palindromes that are a multiple of the denominators is very low. I have not checked this, but it would be easy to do.
+Possibly for these numbers the issue is that the density of palindromes that are a multiple of the denominators is very low. Also, we can compute the smallest integer such that $10^a-1$ is divisibly by the trouble prime $p$. The worst case is $a=p-1$ which happens for these primes
+
+```
+379, 389, 419, 433, 461, 491, 571, 577, 593, 701,
+743, 811, 821, 823, 857, 887, 937, 953, 971, 977,
+983
+```
+
+We expect a priori that the density of the palindromes dividing a given number $n$ should be roughly $1/n$ and the density for palindromes less than $10^12$ is essentiall 0.99 for all the cases except for 243, 486, 729, 972 which have densities of roughly $1/20n$ whereas 625 and 985 have densities about $1/2n$.
+
+### General fractions
 
 For fractions $\frac{p}{q}$ with $1\leq p, q\leq 100$ we have found representations satisfying the conjecture for all fractions. There are over 6000 such fractions with $\mathrm{gcd}(p,q)=1$, so this is pretty good computational evidence in support of the conjecture.
+
+The longest representations where
+
+$$
+\begin{align}
+\frac{35}{71} = &\frac{1}{6} + \frac{1}{8} + \frac{1}{9} + \frac{1}{22} + \frac{1}{66} + \frac{1}{77} + \frac{1}{141} + \frac{1}{292} + \frac{1}{494} + \frac{1}{858} + \frac{1}{1001} + \\
+& \frac{1}{1881} + \frac{1}{2002} + \frac{1}{2112} + \frac{1}{6006} + \frac{1}{7007} + \frac{1}{66066} + \frac{1}{82928} + \frac{1}{84348} +\\
+& \frac{1}{121121} + \frac{1}{141141} + \frac{1}{171171} + \frac{1}{297792} + \frac{1}{616616} + \frac{1}{880088} + \frac{1}{990099} + \frac{1}{27422472} +\\
+& \frac{1}{63366336} + \frac{1}{1211441121} + \frac{1}{27449894472} + \frac{1}{232596695232}
+\end{align}
+$$
+
+and
+
+$$
+\begin{align}
+\frac{62}{71} = \frac{1}{3} + \frac{1}{4} + \frac{1}{7} + \frac{1}{11} + \frac{1}{77} + \frac{1}{88} + \frac{1}{99} + \frac{1}{111} + \frac{1}{292} + \frac{1}{313} + \frac{1}{363} + \frac{1}{777} +\\
+& \frac{1}{1221} + \frac{1}{3003} + \frac{1}{3443} + \frac{1}{7227} + \frac{1}{10001} + \frac{1}{11011} + \frac{1}{20002} + \frac{1}{29592} + \frac{1}{30003} + \\
+& \frac{1}{33033} + \frac{1}{34743} + \frac{1}{37873} + \frac{1}{60006} + \frac{1}{84348} + \frac{1}{90009} + \frac{1}{330033} + \frac{1}{1539351} + \frac{1}{3161613} + \frac{1}{189939981}
+\end{align}
+$$
