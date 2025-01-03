@@ -41,7 +41,7 @@ Each of the classes provides the methods `load`, `save`, `add`, `display`, `late
 
 We have stored representations for each of the methods for unit fractions $\frac{1}{n}$ with $1\leq n\leq 1000$ and general fractions $\frac{p}{q}$ with $1\leq p,q\leq 100$.
 
-## Results so far
+# Results so far
 
 We have succeeded in making reciprocal palindromic representations for all unit fractions for denominators less than 1000. For egyptian palindromic representations we have succeeded for all unif fractions with denominators less than $3^5=243$ and for all denominators less than 1000 with the exception of 78 cases. These are as follows:
 
@@ -110,7 +110,7 @@ Possibly for these numbers the issue is that the density of palindromes that are
 
 We expect a priori that the density of the palindromes dividing a given number $n$ should be roughly $1/n$ and the density for palindromes less than $10^{12}$ is essentially $0.99/n$ for all the cases except for 243, 486, 729, 972 which have densities of roughly $1/20n$ whereas 625 and 985 have densities about $1/2n$.
 
-### General fractions
+## General fractions
 
 For fractions $\frac{p}{q}$ with $1\leq p, q\leq 100$ we have found representations satisfying the conjecture for all fractions. There are over 6000 such fractions with $\mathrm{gcd}(p,q)=1$, so this is pretty good computational evidence in support of the conjecture.
 
@@ -139,3 +139,71 @@ It's worth noting that even for a small fraction like $8/5$ quite a few terms ar
 $$
 \frac{8}{5} = 1 + \frac{1}{2} + \frac{1}{11} + \frac{1}{121} + \frac{1}{2662} + \frac{1}{3993} + \frac{1}{5445} + \frac{1}{59895}.
 $$
+
+# Solvers
+
+To motivate the core idea behind the solution methodologies we are going to try to write $1/14$ as a sum of reciprocal palindromes. We will start without worrying about the palindromes being distinct. So first we find palindromes that are multiples of $14$ as follows:
+
+```
+>>> list(palindrome.pal_div_iterator(14,14,1000))
+> [252, 434, 616, 686, 868]
+```
+
+Each of these palindromes will automatically give us a reciprocal representation like this:
+
+$$
+\frac{1}{14} = \frac{18}{252} = \frac{31}{434} = \frac{44}{616} = \frac{49}{686} = \frac{62}{868}
+$$
+
+So the smallest number of fractions needed here is 18. To improve on this we take a page out of the egyptian fraction playbook. If we subtract a fraction with a palindromic denominator close "enough" to $18/252$ the numerator will become smaller. For the closest reciprocal palindrome is $1/22$ since 22 is the next palindrome:
+
+```
+>>> palindrome.next_pal(14)
+> 22
+```
+
+We have
+
+$$
+\frac{18}{252}-\frac{1}{22} = \frac{2}{77}
+$$
+
+which gives us the much shorter representation
+
+$$
+\frac{1}{14} = \frac{1}{22}+\frac{2}{77}.
+$$
+
+However, this procedure seems a bit ad hoc. How do we know that we get a palindrome in the numberator after we subtract off $1/22$? We can't in general expect such luck. The way to organize this luck is to find palindromes that somehow "fit together". For example if we list all the divisors of 252, 434, 616, 686, 868 we will find that some of the divisors are also palindromes. For 252 and 434 there are no palindrome divisors smaller than the number, but for 686 and 868 there are also the factors 343 and 434. This will help reduce the number of factors needed since we can write
+
+$$
+\frac{49}{686} = \frac{1}{686}+\frac{24}{343}
+$$
+
+and
+
+$$
+\frac{62}{868} = \frac{31}{434}.
+$$
+
+This didn't get us below 18, but take a look at the remaining number $616=2^3\cdot 7\cdot 11$. 616 has the palindromic divisors 22,44,77,88 and 616 itself. We will now try to write $1/14$ in terms of these:
+
+$$
+\frac{1}{14} = \frac{a_1}{22}+\frac{a_2}{44}+\frac{a_3}{77}+\frac{a_4}{88}+\frac{a_5}{616}
+$$
+
+If we multiply by 616 we get a linear diophantine equation
+
+$$
+44 = 28 a_1 + 14 a_2 + 8 a_3 + 7 a_4 + a_5.
+$$
+
+To get a short representation we simply need to get $a_1+a_2+a_3+a_4+a_5$ to be as small as possible. For egyptian palindromic representations we additionally require that $a_i$ is either 0 or 1. In this example we cannot have a solution with only 2 terms since $28+14=42<44$. However, as we saw before we can solve it with 3 terms as such: $44= 28 + 2 \cdot 8$. Correspondingly this gives the solution $1/14=1/22+2/77$ that we saw before. We can also try to get an egyptian palindromic representation. Since 28+14=42$ we cannot have both $a_1=1$ and $a_2=1$ since this would force $a_5=2$. However, if we let $a_1=1$, $a_2=0$ we see that $a_3=a_4=a_5=1$ gives the egyptian palindromic representation:
+
+$$
+\frac{1}{14} = \frac{1}{22}+\frac{1}{77}+\frac{1}{88}+\frac{1}{616}.
+$$
+
+In general solving these integer diophantine equations while minimizing the sum of $a_i$ with the constraint $a_i\geq 0$, can be done using mixed integer linear programming or using diophantine linear equation solvers. I have refrained from using both of these and instead written a recursive greedy search algorithm that I called `stack_search`. The open source linear programming solvers I found did not work with arbitrary sized integers (big integers), which very quickly led to problems even for finding solutions to $1/n$ for $n<100$. It's quite possible that sympy's diophantine solvers could work - but it gives you the general solution and not necessarily the one for which the sum of $a_i$ is minimized. We have our own solver, but it might not be as efficient as some of the open source solvers.
+
+When the constraint $a_i\in\{0,1\}$ is added, the problem becomes a knapsack problem with an equality constraint. Although, this is in general NP complete, it's easy to write a dynamic program to solve. We used a recursion approach that used bounding from above and below to avoid unnecessary recursion.
