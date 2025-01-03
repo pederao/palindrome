@@ -140,7 +140,7 @@ $$
 \frac{8}{5} = 1 + \frac{1}{2} + \frac{1}{11} + \frac{1}{121} + \frac{1}{2662} + \frac{1}{3993} + \frac{1}{5445} + \frac{1}{59895}.
 $$
 
-# Solvers
+# Solution Method
 
 To motivate the core idea behind the solution methodologies we are going to try to write $1/14$ as a sum of reciprocal palindromes. We will start without worrying about the palindromes being distinct. So first we find palindromes that are multiples of $14$ as follows:
 
@@ -174,7 +174,7 @@ $$
 \frac{1}{14} = \frac{1}{22}+\frac{2}{77}.
 $$
 
-However, this procedure seems a bit ad hoc. How do we know that we get a palindrome in the numberator after we subtract off $1/22$? We can't in general expect such luck. The way to organize this luck is to find palindromes that somehow "fit together". For example if we list all the divisors of 252, 434, 616, 686, 868 we will find that some of the divisors are also palindromes. For 252 and 434 there are no palindrome divisors smaller than the number, but for 686 and 868 there are also the factors 343 and 434. This will help reduce the number of factors needed since we can write
+However, this procedure seems a bit ad hoc. How do we know that we get a palindrome in the numberator after we subtract off $1/22$? We can't in general expect such luck. The way to improve our luck is to find palindromes that somehow "fit together". For example if we list all the divisors of 252, 434, 616, 686, 868 we will find that some of the divisors are also palindromes. For 252 and 434 there are no palindrome divisors smaller than the number, but for 686 and 868 there are also the factors 343 and 434. This will help reduce the number of factors needed since we can write
 
 $$
 \frac{49}{686} = \frac{1}{686}+\frac{24}{343}
@@ -186,7 +186,14 @@ $$
 \frac{62}{868} = \frac{31}{434}.
 $$
 
-This didn't get us below 18, but take a look at the remaining number $616=2^3\cdot 7\cdot 11$. 616 has the palindromic divisors 22,44,77,88 and 616 itself. We will now try to write $1/14$ in terms of these:
+This didn't get us below 18, but take a look at the remaining number $616=2^3\cdot 7\cdot 11$. We have:
+
+```
+>>> list(palindrome.palindrome_divisors(616, 14))
+> [22, 44, 77, 88, 616]
+```
+
+In other words 616 has the palindromic divisors 22, 44, 77, 88 and 616 itself. We now try to write $1/14$ in terms of these:
 
 $$
 \frac{1}{14} = \frac{a_1}{22}+\frac{a_2}{44}+\frac{a_3}{77}+\frac{a_4}{88}+\frac{a_5}{616}
@@ -207,3 +214,43 @@ $$
 In general solving these integer diophantine equations while minimizing the sum of $a_i$ with the constraint $a_i\geq 0$, can be done using mixed integer linear programming or using diophantine linear equation solvers. I have refrained from using both of these and instead written a recursive greedy search algorithm that I called `stack_search`. The open source linear programming solvers I found did not work with arbitrary sized integers (big integers), which very quickly led to problems even for finding solutions to $1/n$ for $n<100$. It's quite possible that sympy's diophantine solvers could work - but it gives you the general solution and not necessarily the one for which the sum of $a_i$ is minimized. We have our own solver, but it might not be as efficient as some of the open source solvers.
 
 When the constraint $a_i\in\{0,1\}$ is added, the problem becomes a knapsack problem with an equality constraint. Although, this is in general NP complete, it's easy to write a dynamic program to solve. We used a recursion approach that used bounding from above and below to avoid unnecessary recursion.
+
+## Multiples of 10
+
+We hit a snag however when we try to use this approach with a number that is a multiple of 10, since no palindrome can be a multiple of 10. To get around this we need to split up the number such that the factors of 2 and 5 are separated. Now, $1\10$ itself is a really tough one, so we will start by looking at what happens to $1/30$. We write $30=5\times 6$ and look for palindromes that are multiples of 5 and 6 and are also larger than 30. The first such palindromes are $55$ and $66$. Let's try solving
+
+$$
+\frac{1}{30} = \frac{a_1}{55}+\frac{a_2}{66}.
+$$
+
+Cross-multiplying by $330=\mathrm{lcm}(55,66)$ gives
+$11 = 6a_1+5a_2$ with the obvious solution $a_1=a_2=1$ giving $1/30=1/55+1/66$. Let's also look at a slightly larger number such as $60=2^2\cdot 3\cdot 5$ and let's look for palindromes that are multiples of $12=2^2\cdot 3$ and $15=3\cdot 5$ respectively with some shared factors. One such possibility is $252,252=2^2\cdot 3^2\cdot 7 \cdot 11\cdot 13$ and $585=3^2\cdot 5\cdot 13$. Next we calculate $\mathrm{lcm}(252,252,585) =1,261,260$ and we find all of its palindromic divisors larger than 60:
+
+```
+>>> list(palindrome.palindrome_divisors(1261260, 60))
+> [66, 77, 99, 252, 585, 858, 1001, 2002, 2772, 3003, 4004, 5005, 6006, 7007, 9009, 252252]
+```
+
+This gives the equation
+
+$$
+\frac{1}{60} = \frac{a_1}{66}+\frac{a_2}{77}+\frac{a_3}{99}+\cdots + \frac{a_{15}}{9009}+\frac{a_{16}}{252252}.
+$$
+
+Cross multiplying by $1,261,260$ gives the diophantine equation
+
+$$
+\begin{align}
+21021 =& 19110 a_1 + 16380 a_2 +12740a_3 + 5005a_4 + 2156a_5 + 1470a_6 + 1260a_7+\\
+&630a_8+455a_9+420a_{10}+315a_{11}+252a_{12}+210a_{13}+180a_{14}+140a_{15}+5a_6
+\end{align}
+$$
+
+It can then be checked that $a_2=a_5=a_6=a_9=a_{10}=a_{15}=1$ with all other coefficients 0 solves the problem since we then get
+$16380+2156+1470+455+420+140=21021$ as required. This is a solution with 5 coefficients. We can actually use the `palindrome.egyptian_pal_iterator` with $k=5$ to verify that there are no solutions with only 5 terms. Thus this gives the shortest possible representation for $1/60$, i.e.
+
+$$
+\frac{1}{60} = \frac{1}{77}+\frac{1}{585}+\frac{1}{858}+\frac{1}{2772}+\frac{1}{3003}+\frac{1}{9009}.
+$$
+
+Glorious isn't it! Now the name of the game becomes how to make the choices to come up with the list for the palindromic denominators.
