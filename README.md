@@ -224,7 +224,9 @@ $$
 $$
 
 Cross-multiplying by $330=\mathrm{lcm}(55,66)$ gives
-$11 = 6a_1+5a_2$ with the obvious solution $a_1=a_2=1$ giving $1/30=1/55+1/66$. Let's also look at a slightly larger number such as $60=2^2\cdot 3\cdot 5$ and let's look for palindromes that are multiples of $12=2^2\cdot 3$ and $15=3\cdot 5$ respectively with some shared factors. One such possibility is $252,252=2^2\cdot 3^2\cdot 7 \cdot 11\cdot 13$ and $585=3^2\cdot 5\cdot 13$. Next we calculate $\mathrm{lcm}(252,252,585) =1,261,260$ and we find all of its palindromic divisors larger than 60:
+$11 = 6a_1+5a_2$ with the obvious solution $a_1=a_2=1$ giving $\frac{1}{30}=\frac{1}{55}+\frac{1}{66}$.
+
+Things are however, not always this straightforward, so let's consider a more complex example, so that the difficulties become more apparent. Consider $\frac{1}{60}$ with the factorization $60=2^2\cdot 3\cdot 5$ and let's look for palindromes that are multiples of $12=2^2\cdot 3$ and $15=3\cdot 5$ respectively with some shared factors. One such possibility is $252,252=2^2\cdot 3^2\cdot 7 \cdot 11\cdot 13$ and $585=3^2\cdot 5\cdot 13$. Next we calculate $\mathrm{lcm}(252252, 585) =1261260$ and we find all of its palindromic divisors larger than 60:
 
 ```
 >>> list(palindrome.palindrome_divisors(1261260, 60))
@@ -253,4 +255,23 @@ $$
 \frac{1}{60} = \frac{1}{77}+\frac{1}{585}+\frac{1}{858}+\frac{1}{2772}+\frac{1}{3003}+\frac{1}{9009}.
 $$
 
-Glorious isn't it! Now the name of the game becomes how to make the choices to come up with the list for the palindromic denominators.
+Just to double check that we can solve the knapsack problem, let's use our library function::
+
+```
+>>> import sympy, solver
+>>> x = [66, 77, 99, 252, 585, 858, 1001, 2002, 2772, 3003, 4004, 5005, 6006, 7007, 9009, 252252]
+>>> target = sympy.lcm(x)//60
+>>> weight = [sympy.lcm(x) // i for i in x]
+>>> score, a = solver.exact_knapsack(weight, capacity=target)
+>>> score, a
+> (6, [0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0])
+```
+
+We can now get the denominators back like so:
+
+```
+>>> [x[i] for i in range(len(a)) if a[i] > 0]
+[77, 585, 858, 2772, 3003, 9009]
+```
+
+Glorious isn't it! Now the name of the game becomes how to make the choices to come up with the list for the palindromic denominators. Why did we for example choose 252,252 as the base palindrome for 12 and 585 as the base palindrome for 15? This was indeed done through some kind of brute force search, but maybe something smarter is possible?
