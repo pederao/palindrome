@@ -1,30 +1,79 @@
+"""
+Module for finding shortest reciprocal palindromic representation of fractions.
+
+The solvers all solve the same problem to find the shortest reciprocal palindrome representation, but 
+the reciprocal_pal_stack_search allows repetition.  The essence of the optimization problem is to minimize
+over a given weights [w_1, w_2, ..., w_n]
+
+    min sum_i a_i 
+
+    subject to 
+        sum_i a_i * w_i = capacity 
+        and a_i = 0 or 1 with no allowed repetition
+        or a_i in {0,1,2,3,...} with allowed repetition
+
+SOLVERS:
+    'exact_knapsack': A recursive solver for the exact knapsack problem.
+    `egyptian_stack_search`: A stack based solver for the exact knapsack problem.
+    `reciprocal_pal_stack_search`: A stack based solver for the corresponding linear integer programming problem.
+
+SEARCH FUNCTIONS:
+
+HELPER FUNCTIONS:
+    `weights_from_palindrome`: Given a large integer seed_value, a numerator p and a denominator q calculate the 
+                               capacity and weights for the knapsack or linear integer programming problem.
+    `weights_from_palindrome_r`: Same, but p/q is given as a Rational.
+
+"""
+
+import bisect
+from typing import List, Tuple, Dict, Any, Union, Iterator
+from sympy import Rational
+from sympy.ntheory import is_palindromic
+
 import palindrome
 
-def exact_knapsack(weight, capacity, max_score=1_000_000, depth=0):
+def exact_knapsack(weight: List[int], capacity: int, max_score: int=1_000_000, depth: int=0) -> Tuple[int, List[int], int]:
     """
-    Solve the exact knapsack problem min sum_i x_i*v_i = capacity and sum_i v_i < max_score
-    In our setting v_i=1 or 0.  weight = [x_1, x_2, ..., x_n] is a list of integers.
+    A recursive solver that solves the exact knapsack problem.
+
+    Solve the exact knapsack problem: 
+        min sum_i a_i
+    subject to 
+        a_i = 0 or 1, and
+        sum_i a_i * w_i = capacity, and
+        sum_i a_i < max_score
+    weight = [w_1, w_2, ..., w_n] is a list of integers, and the solution is
+    given by the vector of active weights: active = [a_1, a_2, ..., a_n].  
+    The score upon succesful completion is set to sum_a a_i and otherwise to max_score.
     
-    We use the convention that if score==max_score on return there was no solution
-    
-    USAGE: score, x = exact_knapsack(weight, capacity, max_score=50)
+    USAGE: score, active, error_code = exact_knapsack(weight, capacity, max_score=50)
+
+    error_code=0: no error and a solution was found
+    error_code=1: no solution was found.
+
+    Note that the running time for a weight vector with 48 entries and a max_score>=48 
+    was roughly 5 minutes on my computer.  Already for 50 entries the algorithm may run 
+    for several days.   For weight vectors with more than 48 entries use the 
+    egyptian_stack_search that has facilities for early termination of the search.
+
     """
 #    global counter
 #    counter += 1
     if len(weight)==0:
         if capacity==0:
-            return(0,[])
+            return(0,[], 0)
         else:
-            return(max_score, [])
+            return(max_score, [], 0)
     best_score = max_score
     best_x = []
     # quickly check if we have enough weight to reach capacity
     max_cap = sum(weight)
     if max_cap<capacity:
         #print("Insufficient weights")
-        return(max_score, [])
+        return(max_score, [], 1)
     if depth>=max_score:
-        return(max_score, [])
+        return(max_score, [], 1)
     
     start_cap = capacity
     npal = len(weight)
@@ -43,17 +92,17 @@ def exact_knapsack(weight, capacity, max_score=1_000_000, depth=0):
         
     # if number of forced choices brings us above max_score, then bail out
     if depth+score>=max_score: # >=max_score-1???????????????
-        return(max_score, [])
+        return(max_score, [], 1)
     
     #print(f"start={start}, new cap={capacity}")
     if capacity == 0:
-        return(score, x)
+        return(score, x, 0)
     #if capacity<0:
     #    print(f"start_cap = {start_cap}, weight={weight}, x={x}, surplus={surplus}, cap={capacity}")
         
     if start>=npal or capacity<0:
         #print("Failed after surplus pruning")
-        return(max_score, [])
+        return(max_score, [], 1)
     
     # Next, no weight>capacity can be used
     while(start<npal and weight[start]>capacity):
@@ -64,7 +113,7 @@ def exact_knapsack(weight, capacity, max_score=1_000_000, depth=0):
     #print(f"cap={cap}, surplus={surplus}")
     if surplus<0:
         #print("Insufficient capacity after removal of over-weights")
-        return(max_score, [])
+        return(max_score, [], 1)
 
     #print(x, weight)
     #print(start, score, capacity, surplus)
@@ -75,7 +124,7 @@ def exact_knapsack(weight, capacity, max_score=1_000_000, depth=0):
             #print(f"Recursive call, cap={capacity}, surplus={surplus}, i={i}, x={x}")
             #print(f"i={i}, x={x}, weight={weight}, capacity={capacity}")
             #print(f"new_weight={weight[start:i]+weight[i+1:]}, capacity={capacity-weight[i]}")
-            score_i, x_i = exact_knapsack(weight[i+1:], capacity-weight[i], max_score=max_score, depth=depth+score+1)
+            score_i, x_i, error_code = exact_knapsack(weight[i+1:], capacity-weight[i], max_score=max_score, depth=depth+score+1)
             if len(x_i)>0 and 1+score+score_i < best_score:
                 #print(f"score={score}, weight={weight}, cap={capacity}, depth={depth}")
                 #print(f"x={x}, x_i={x_i}, i={i}, start={start}, end={end}, score_i={score_i}, best_score={best_score}")
@@ -93,5 +142,398 @@ def exact_knapsack(weight, capacity, max_score=1_000_000, depth=0):
         surplus -= weight[i]
     if best_score<max_score:
         # print(f"best_score={best_score}, max_score={max_score}, best_x={best_x}")
-        return(best_score, best_x)
-    return(max_score,[])
+        return(best_score, best_x, 0)
+    return(max_score, [], 1)
+
+
+def end_capacity_(weights: List[int], max_score: int)-> List[int]:
+    """
+    Private helper function for egyptian_stack_search.  
+    
+    Calculates the sum of the next max_score weights from a given point onward.  If the 
+    sum is less than the remaining capacity from a given point then no solution is possible 
+    from that point onwards.
+
+    USAGE: cum_sum = end_capacity_(weights, max_score)
+
+    If max_score = 3 and weights=[w_1, w_2, w_3, ..., w_n] then cum_sum would be equal to:
+    cum_sum = [w_1+w_2+w_3, w_2+w_3+w_4, ...., w_{n-2}+w_{n-1}+w_n, w_{n-1}+w_n, w_n]
+
+    """
+    cum_sum = [0 for i in weights]
+    for i in range(len(weights)):
+        for j in range(i, min(i+max_score, len(weights))):
+            cum_sum[i] += weights[j] 
+    return(cum_sum)
+
+
+def egyptian_stack_search(weight: List[int], capacity: int, max_score: int=1_000, max_tries: int=100_000_000, verbose: bool=True) -> Tuple[int, List[int], int]:
+    """
+    A stack based solver that avoids recursion to solve the exact knapsack problem.
+    The user can set an early termination criteria by specifying max_tries.  The 
+    default setting should terminate after roughly 5 minutes.
+
+    Solves the exact knapsack problem: 
+        min sum_i a_i
+    subject to 
+        a_i = 0 or 1, and
+        sum_i a_i * w_i = capacity, and
+        sum_i a_i < max_score
+    weight = [w_1, w_2, ..., w_n] is a list of integers, and the solution is
+    given by the vector of active weights: active = [a_1, a_2, ..., a_n].  
+    The score upon succesful completion is set to sum_a a_i and otherwise to max_score.
+    
+    USAGE: score, active, error_code = egyptian_stack_search(capacity, weights, max_score=1_000, max_tries=100_000_000)
+
+    error_code=0: no error and a best solution was found
+    error_code=1: no solution was found and all possibilities exhausted.
+    error_code=-1: no solution was found and algorithm terminated early due to #tries reaching max_tries.
+
+    If error==0 we should have sum([active[i]*weights[i] for i in range(len(active))])==capacity.
+    
+    On my computer it takes roughly 1 minute to try 20_000_000 combinations of weights.  With 1 billion tries
+    the time would roughly be 50 minutes.
+    
+    """
+    assert(capacity>0)
+    # need to switch signs to make bisection search work properly
+    target = -capacity
+    weights = [-w for w in weight] 
+    n = len(weights)
+    best_score = max_score
+    best_active = [-1 for i in weights]
+
+    num_backtracks = 0
+    cum_sum = end_capacity_(weights, n-1)
+    search_start = [0 for i in weights]
+    search_current = [0 for i in weights]
+    search_stop = [n for i in weights]
+    active = [0 for i in weights]
+    search_current[0] = -1
+    sp = 0
+    cur_target = target
+    cur_score = 0
+    
+    # Some sanity checks before starting the stack search.
+    if weights[-1]<cur_target:
+        print(f"Check your calling parameters, capacity={-cur_target} is < weights[-1]={-weights[-1]}")
+        return(best_score, best_active, 1)
+    if weights[-1]==cur_target:  # This is an edge case that doesn't work in our code
+        best_score = 1
+        best_active = [0 for i in active]
+        best_active[-1] = 1
+        return(best_score, best_active, 0)
+
+    ii = search_current[sp]
+    if weights[ii+1]<cur_target:
+        # Typically target would be much lower than the first weight.  This
+        # would rarely happen, cut our code would not work if it happens and
+        # we enter the while look with the first weight being smaller than the 
+        # target.
+        for jj in range(n):
+            if weights[jj]>=cur_target:
+                ii = jj-1
+                break
+        search_current[sp] = ii
+        #print(f"Starting search at {ii}")
+
+    prev_backtrack_message = 0
+    while sp>=0 and num_backtracks<max_tries:
+        if num_backtracks%10_000_000 == 0:
+            if num_backtracks!=prev_backtrack_message:
+                print(f"#tries={num_backtracks:_}, best_score={best_score}")
+                prev_backtrack_message = num_backtracks
+                # to avoid getting the same message repeatedly as we descend the stack.
+        search_current[sp] += 1
+        i = search_current[sp]
+        cur_target -= weights[i]
+        active[i] = 1
+        cur_score += 1
+        #print(f"search @{i} in range: {search_start[sp]}:{search_stop[sp]}")
+        #print(f"cur_score={cur_score}, active={active}")
+        #print(f"weights[i]={weights[i]}")
+        #assert(cur_score == sum(active))
+        #assert(cur_target == target - sum([active[k]*weights[k] for k in range(len(active))]))
+
+        if sp==0 and i==(n-1):
+            #print("Search is at an end")
+            break # We have come to the end
+
+        if i<search_stop[sp] and cur_score<best_score:
+            #print(f"bisect on weights: cur_target={cur_target}, indices:{search_start[sp]}:{search_end[sp]}")
+            # i+1 instead of search_start[sp]?
+            new_start = bisect.bisect_left(weights, cur_target, i+1, n)
+            #print(f"new_start={new_start}, weight={weights[new_start]}, cur_target={cur_target}")
+            # note < means > since we have flipped the signs.
+            # this shouldn't strictly speaking happen much.
+            #print(new_start)
+            if weights[new_start]<cur_target: # don't descend a level in the stack, simply keep sp and move current
+                #print("Backtrack due to insufficient remaining weights.")
+                active[i] = 0
+                cur_score -= 1
+                cur_target += weights[i]
+                num_backtracks += 1
+                sp-=1
+                active[search_current[sp]] = 0
+                cur_score -= 2
+                cur_target += weights[i]
+                cur_target += weights[search_current[sp]]
+                continue
+
+            #print(f"new_start={new_start}, {weights[new_start]}")
+            search_start[sp+1] = new_start
+            if weights[new_start] == cur_target:
+                #print("Success backtrack!")
+                # found a match after adding new_start
+                active[new_start] = 1
+                cur_score += 1
+                #print(f"Hooray, match! new_start={new_start} cur_target={cur_target}, {weights[new_start]}")
+                #print(f"score={cur_score}, sp={sp}, search[sp-1]:{search_start[sp-1]}, {search_current[sp-1]}, {search_end[sp-1]}")
+                #print(active)
+                score = sum(active)
+
+                #assert(score==cur_score)
+                if score<best_score:
+                    best_score = score
+                    best_active = active.copy()
+                    # update cum_sum, to accelerate the search
+                    # don't need to find other solutions with same score, so use best_score-1
+                    cum_sum = end_capacity_(weights, best_score-1) 
+                    print(f"Best score = {score}")
+                    #active_dens = [dens[i] for i in range(len(active)) if active[i]==1]
+                    #print(active_dens)
+                active[new_start] = 0
+                cur_score -= 1
+
+                # backtrack from success
+                num_backtracks += 1
+                active[i] = 0
+                sp -= 1
+                active[search_current[sp]] = 0
+                cur_score -= 2
+                cur_target += weights[i]
+                cur_target += weights[search_current[sp]]
+                continue
+            else:
+    #             if search_start[sp+1]==n:
+    #                 #print("Search_start[sp+1] at end")
+    #                 search_end[sp+1]=n
+    #                 assert(False)
+    #             else:
+                #print(f"bisect on cum_sum: cur_target={cur_target}, indices:{search_start[sp]}:{search_end[sp]}")
+                new_stop = bisect.bisect_left(cum_sum, cur_target, i+1, n)
+                #print(f"target={cur_target}, new_start={new_start}, new_stop={new_stop}")
+                #print(f"weight_start={weights[new_start]}, cum_sum_stop={cum_sum[new_stop]}")
+                search_stop[sp+1] = new_stop
+                # This is a shortcut to save time
+                if new_stop<=new_start: # don't descend a level in the stack, simply keep sp and move current
+                    #print("Same level backtrack")
+                    active[i] = 0
+                    cur_score -= 1
+                    cur_target += weights[i]
+                    num_backtracks += 1
+                else:
+                    if cum_sum[new_stop] == cur_target:
+                        # print("cum_sum == cur_target")
+                        # found a match after adding new_start
+                        for ii in range(new_stop,n):
+                            active[ii] = 1
+                            cur_score += 1
+                        #print(f"Hooray, match! new_start={new_start} cur_target={cur_target}, {weights[new_start]}")
+                        #print(f"score={cur_score}, sp={sp}, search[sp-1]:{search_start[sp-1]}, {search_current[sp-1]}, {search_end[sp-1]}")
+                        #print(active)
+                        score = sum(active)
+
+                        #assert(score==cur_score)
+                        if score<best_score:
+                            best_score = score
+                            best_active = active.copy()
+                            # update cum_sum, to accelerate the search
+                            # don't need to find other solutions with same score, so use best_score-1
+                            cum_sum = end_capacity_(weights, best_score-1) 
+                            print(f"Best score = {score}")
+                            #active_dens = [dens[i] for i in range(len(active)) if active[i]==1]
+                            #print(active_dens)
+
+                        for ii in range(new_stop,n):
+                            active[ii] = 0
+                            cur_score -= 1
+
+                        # backtrack from success
+                        num_backtracks += 1
+                        active[i] = 0
+                        sp -= 1
+                        active[search_current[sp]] = 0
+                        cur_score -= 2
+                        cur_target += weights[i]
+                        cur_target += weights[search_current[sp]]
+                        continue
+                    else:
+                        sp+= 1
+                        search_current[sp] = new_start-1
+                        #print(f"Descending sp+=1, @{search_current[sp]} in {search_start[sp]}:{search_stop[sp]}")
+        else: # if i<search_stop
+            #print("Backtrack due to i>=search_stop")
+            #print(f"sp={sp}, i={i}, range={search_start[sp]}:{search_stop[sp]}")
+            num_backtracks += 1
+            active[i] = 0
+            sp-=1
+            active[search_current[sp]] = 0
+            cur_score -= 2
+            cur_target += weights[i]
+            cur_target += weights[search_current[sp]]
+            #print(f"Exiting backtrack with sp={sp}, new_range: i={search_current[sp]}, range={search_start[sp]}:{search_stop[sp]}")
+    if num_backtracks>=max_tries:
+        print("Reached max_tries, aborting search.")
+    error_code = 0
+    if best_score>=max_score:
+        error_code = 1
+    if num_backtracks>=max_tries:
+        error_code = -1
+            
+    return(best_score, best_active, error_code)
+
+
+def reciprocal_pal_stack_search(weight: List[int], capacity: int, max_score: int=-1, max_tries: int=10_000_000, verbose: bool=True) -> Tuple[int, List[int], int]:
+    """
+    A stack based solver that avoids recursion to solve an integer linear programming 
+    problem related to a reciprocal palindrome representation.
+
+    The user can set an early termination criteria by specifying max_tries.  The 
+    default setting should terminate after roughly 5 minutes.
+
+    Solves the exact knapsack problem: 
+        min sum_i a_i
+    subject to 
+        a_i>=0 and an integer [i.e. in the set {0,1,2,...}]
+        sum_i a_i * w_i = capacity, and
+        sum_i a_i < max_score
+    weight = [w_1, w_2, ..., w_n] is a list of integers, and the solution is
+    given by the vector of active weights: active = [a_1, a_2, ..., a_n].  
+    The score upon succesful completion is set to sum_i a_i and otherwise to max_score.
+    Also sum_i a_i * w_i = capacity if succesful.
+    
+    USAGE: score, active, error_code = reciprocal_pal_stack_search(capacity, weights, max_score=-1, max_tries=100_000_000)
+
+    error_code=0: no error and a best solution was found
+    error_code=1: no solution was found and all possibilities exhausted.
+ 
+     """
+    best_score = max_score
+    if best_score==-1:
+        best_score = capacity+1
+
+    if len(weight)==1:
+        if capacity % weight[0] == 0:
+            return(capacity//weight[0], [capacity//weight[0]], 0)
+        else:
+            return(max_score, [], 1)
+
+    best_use = []
+    npal = len(weight)
+    iterations = 0
+    max_use = [ min(best_score, capacity//x) for x in weight]
+
+    if weight[-1] != 1:
+        print("WARNING: The stack search may get stuck or be extremely slow if weights[-1]!=1.")
+
+    used = [0,]*npal
+    run_up = [0,]*npal
+    cum_score = [0,]*npal
+    sp = 0
+    used[sp] = max_use[sp]
+    cum_score[sp] = max_use[sp]
+    run_up[sp] = used[sp] * weight[sp]
+    back_track = False
+    while (sp>=0 and iterations<max_tries):
+        if back_track:
+            used[sp] = 0 
+            cum_score[sp] = 0
+            run_up[sp] = 0
+            back_track = False
+            sp -= 1
+            if sp<0:
+                #print("Quitting")
+                break
+            if used[sp]<=0:
+                back_track = True
+                continue
+            iterations += 1
+            u = used[sp]-1
+            used[sp] = u
+            score = cum_score[sp-1] + u
+            cum_score[sp] = score
+            run_up[sp] = run_up[sp-1] + u * weight[sp]
+        else:
+            sp += 1
+            if (sp>=npal):
+                back_track = True
+                sp = npal-1
+                if weight[-1]>1:
+                    for k in range(sp, 0, -1):
+                        if weight[sp-1]%weight[-1] == 0:
+                            # backtracking to this level will be useless,
+                            # so we will manually backtrack extra levels.
+                            used[sp] = 0 
+                            cum_score[sp] = 0
+                            run_up[sp] = 0
+                            sp -= 1
+                        else:
+                            break
+                    continue
+                else:
+                    print(weight)
+                    print(max_use)
+                    print(used)
+                    print(run_up)
+                    print(cum_score)
+                    print(sp)
+                    assert(False)
+                    
+            ds = weight[sp]
+            u = int((capacity-run_up[sp-1])//ds)
+            used[sp] = u
+            score = cum_score[sp-1] + u
+            cum_score[sp] = score
+            if score>=best_score:
+                back_track = True
+                continue
+            run_up[sp] = run_up[sp-1] + u * ds
+            if run_up[sp] == capacity:
+                back_track = True
+                if score<best_score:
+                    if verbose:
+                        print(f"Hit : {used}, score={score}, its={iterations}")
+                    best_score = score
+                    best_use = used.copy()
+    if len(best_use)>0:
+        return(best_score, best_use, 0)
+    else:
+        return(best_score,[], 1) # no hits
+
+
+
+def weights_from_palindrome_r(seed_value: int, r: Rational)-> Tuple[int, List[int], List[int]]:
+    """
+    Given a seed value generate a set of palindrome denominators to use for the search.  The weight
+    vector and the target can be used with the knapsack and stack_search optimization routines, and
+    the div_list contains the palindromes needed to reconstruct the reciprocal palindromic representation.
+    """
+    return weights_from_palindrome(seed_value, int(r.p), int(r.q))
+
+
+def weights_from_palindrome(seed_value: int, p: int, q: int)-> Tuple[int, List[int], List[int]]:
+    """
+    Given a seed value generate a set of palindrome denominators to use for the search for a representation
+    for the rational p/q.  The weight vector and the target can be used with the knapsack and stack_search 
+    optimization routines, and the div_list contains the palindromes needed to reconstruct the reciprocal 
+    palindromic representation.
+    """
+    min_value = q // p
+    div_list = list(palindrome.palindrome_divisors(seed_value, min_value))
+    weight = [ seed_value // x for x in div_list ]
+    capacity = (seed_value*p) // q
+    if p>q:
+        pass
+
+    return(capacity, weight, div_list)

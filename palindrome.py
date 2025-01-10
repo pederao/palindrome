@@ -10,6 +10,8 @@ ITERATORS:
 - `pal_iterator`: Iterate over palindromic integers in a range.
 - `pal_div_iterator`: Iterate over palindromic integers in a range that is a multiple
                         of a given divisor.
+- `pal_bipartition_iterator`: Iterate over decompositions of a number into two palindromes.
+- `pal_tripartition_iterator`: Iterate over decompositions of a number into three palindromes.
 
 - `reciprocal_pair_iterator`: Iterate over solutions to $p/q=1/a+1/b$.
 - `reciprocal_pair_iterator_r`: Iterate over solutions to $r=1/a+1/b$.
@@ -41,6 +43,8 @@ HELPER FUNCTIONS:
 - `prev_pal`: Find the largest palindromic number less than a number.
 - `pal_ceil`: Find the smallest palindromic number greater than or equal to a number.
 - `next_pal`: Find the smallest palindromic number greater than a number.
+- `has_palindromic_bipartition`: Determine if a number can be written as a sum of two palindromes.
+- `has_palindromic_tripartition`: Determine if a number can be written as a sum of three palindromes.
 """
 import sympy
 from sympy import factorint, Rational
@@ -643,6 +647,48 @@ def pal_div_iterator(n: int, start: int, stop: int) -> Iterator[int]:
         for nd in range(nd1, nd2):
             for i in pal_div_iterator_(nd, n, start, stop):
                 yield i
+
+
+def has_palindromic_bipartition(n: int) -> bool:
+    """
+    Returns true if n = p1+p2 with p1>0 and p2>0 palindromes.  1 will return False, while 2 = 1+1 is a bipartition. 
+    """
+    for p1 in pal_iterator(1,n//2):
+        if is_palindromic(n-p1):
+            return(True)
+    return(False)
+
+def has_palindromic_tripartition(n: int) -> bool:
+    """
+    Returns true if n = p1+p2+p2 with p1>0, p2>0 and p3>0 palindromes.  
+    Only 0, 1 and 2 has no tripartition. 
+    """
+    if n>2:
+        return True
+    return False
+
+
+def pal_bipartition_iterator(n: int) -> Iterator[Tuple[int, int]]:
+    """
+    Generator for all partitions n = p1+p2 with 0<p1<=p2 and p1 and p2 being palindromes.
+    Note that not all numbers have bipartite palindromic representations.
+    """
+    for p1 in pal_iterator(1,n//2):
+        p2 = n-p1
+        if is_palindromic(p2):
+            yield(p1, p2)
+
+
+def pal_tripartition_iterator(n: int) -> Iterator[Tuple[int, int, int]]:
+    """
+    Generator for all partitions n = p1+p2+p3 with 0<p1<=p2<=p3 and p1, p2 and p3 being palindromes.
+    Note that all integers larger than 2 can be partitioned into 3 palindromes in at least one way.
+    """
+    for p1 in pal_iterator(1,n//2):
+        for p2 in pal_iterator(p1,(n-p1)//2):
+            p3 = n-p1-p2
+            if is_palindromic(p3):
+                yield(p1, p2, p3)
 
 
 if __name__ == "__main__":

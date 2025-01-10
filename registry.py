@@ -1,5 +1,5 @@
 """
-Module for storing shortest reciprocal representation of fractions.
+Module for storing shortest reciprocal palindromic representation of fractions.
 Whenever a shorter fraction is added the previous one is removed and 
 can no longer be retrieved.
 
@@ -160,7 +160,7 @@ class EgyptianRegistry(BaseRegistry):
     
                 
     def add(self, 
-            palindromes:List[int], 
+            palindromes: List[int], 
             reciprocal_palindromes: List[int], 
             discovered_by: str='NN', 
             date='', 

@@ -100,13 +100,22 @@ $$
 \end{aligned}
 $$
 
-Possibly for these numbers the issue is that the density of palindromes that are a multiple of the denominators is very low. Also, we can compute the smallest integer such that $10^a-1$ is divisibly by the trouble prime $p$. The worst case is $a=p-1$ which happens for these primes
+Possibly for these numbers the issue is that the density of palindromes that are a multiple of the denominators is very low. Also, we can compute the smallest integer such that $10^a-1$ is divisibly by the trouble prime $p$. This number is called the order of 10 modulo $p$. By Fermat's little theorem we know that the worst case is $a=p-1$ which happens for exactly 21 of the 78 numbers on our list:
 
 ```
 379, 389, 419, 433, 461, 491, 571, 577, 593, 701,
 743, 811, 821, 823, 857, 887, 937, 953, 971, 977,
 983
 ```
+
+In fact for a total of 59 of the trouble makers do we have that the order is greater than 100. The two smallest orders are 26 for 859 and 27 for 243. If we take a look at $10^26-1$ we can get a glimpse of why at least $10^{26}-1$ won't work as a base palindrome. The palindromic divisors of $10^{26}-1$ are:
+
+```
+9_449, 1_111_111_111_111, 3_333_333_333_333, 9_999_999_999_999, 10_000_000_000_001, 12_222_222_222_221, 30_000_000_000_003, 36_666_666_666_663, 90_000_000_000_009, 1_010_101_010_101_010_101_010_101, 3_030_303_030_303_030_303_030_303, 9_090_909_090_909_090_909_090_909, 11_111_111_111_111_111_111_111_111, 33_333_333_333_333_333_333_333_333, 99_999_999_999_999_999_999_999_999
+```
+
+Since there is a jump from 4 digits to 11 digits its understandable that the shortest representation of $\frac{1}{859}$ would be $\frac{11}{9449}$ using this base. Also, anomalous about 859 is that the first two palindromes that are multiples of 859 are
+9,449 and 1,699,961, so there is a big jump there as well.
 
 We expect a priori that the density of the palindromes dividing a given number $n$ should be roughly $1/n$ and the density for palindromes less than $10^{12}$ is essentially $0.99/n$ for all the cases except for 243, 486, 729, 972 which have densities of roughly $1/20n$ whereas 625 and 985 have densities about $1/2n$.
 
@@ -174,7 +183,7 @@ $$
 \frac{1}{14} = \frac{1}{22}+\frac{2}{77}.
 $$
 
-However, this procedure seems a bit ad hoc. How do we know that we get a palindrome in the numberator after we subtract off $1/22$? We can't in general expect such luck. The way to improve our luck is to find palindromes that somehow "fit together". For example if we list all the divisors of 252, 434, 616, 686, 868 we will find that some of the divisors are also palindromes. For 252 and 434 there are no palindrome divisors smaller than the number, but for 686 and 868 there are also the factors 343 and 434. This will help reduce the number of factors needed since we can write
+However, this procedure seems a bit ad hoc. How do we know that we get a palindrome in the numerator after we subtract off $1/22$? We can't in general expect such luck. The way to improve our luck is to find palindromes that somehow "fit together". For example if we list all the divisors of 252, 434, 616, 686, 868 we will find that some of the divisors are also palindromes. For 252 and 434 there are no palindrome divisors smaller than the number, but for 686 and 868 there are also the factors 343 and 434. This will help reduce the number of factors needed since we can write
 
 $$
 \frac{49}{686} = \frac{1}{686}+\frac{24}{343}
@@ -271,7 +280,7 @@ We can now get the denominators back like so:
 
 ```
 >>> [x[i] for i in range(len(a)) if a[i] > 0]
-[77, 585, 858, 2772, 3003, 9009]
+> [77, 585, 858, 2772, 3003, 9009]
 ```
 
 Glorious isn't it! Now the name of the game becomes how to make the choices to come up with the list for the palindromic denominators. Why did we for example choose 252,252 as the base palindrome for 12 and 585 as the base palindrome for 15? This was indeed done through some kind of brute force search, but maybe something smarter is possible?
