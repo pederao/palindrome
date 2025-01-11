@@ -17,7 +17,8 @@ SOLVERS:
     `egyptian_stack_search`: A stack based solver for the exact knapsack problem.
     `reciprocal_pal_stack_search`: A stack based solver for the corresponding linear integer programming problem.
 
-SEARCH FUNCTIONS:
+PROBLEM ITERATORS:
+    `palindrome_seed_iterator`: Iterates over palindromes dividing the denominator and uses heuristics to speed up the search.
 
 HELPER FUNCTIONS:
     `weights_from_palindrome`: Given a large integer seed_value, a numerator p and a denominator q calculate the 
@@ -27,13 +28,14 @@ HELPER FUNCTIONS:
 """
 
 import bisect
+import math
 from typing import List, Tuple, Dict, Any, Union, Iterator
-from sympy import Rational
+import sympy
+from sympy import Rational, factorint
 from sympy.ntheory import is_palindromic
-
 import palindrome
 
-def exact_knapsack(weight: List[int], capacity: int, max_score: int=1_000_000, depth: int=0) -> Tuple[int, List[int], int]:
+def exact_knapsack(weight: List[int], capacity: int, max_score: int=1_000_000, depth: int=0, verbose: bool=False) -> Tuple[int, List[int], int]:
     """
     A recursive solver that solves the exact knapsack problem.
 
@@ -141,7 +143,8 @@ def exact_knapsack(weight: List[int], capacity: int, max_score: int=1_000_000, d
                 #print(best_score, best_x, weight)
         surplus -= weight[i]
     if best_score<max_score:
-        # print(f"best_score={best_score}, max_score={max_score}, best_x={best_x}")
+        if verbose and depth==0:
+            print(f"best_score={best_score}")
         return(best_score, best_x, 0)
     return(max_score, [], 1)
 
@@ -240,7 +243,7 @@ def egyptian_stack_search(weight: List[int], capacity: int, max_score: int=1_000
     prev_backtrack_message = 0
     while sp>=0 and num_backtracks<max_tries:
         if num_backtracks%10_000_000 == 0:
-            if num_backtracks!=prev_backtrack_message:
+            if num_backtracks!=prev_backtrack_message and verbose:
                 print(f"#tries={num_backtracks:_}, best_score={best_score}")
                 prev_backtrack_message = num_backtracks
                 # to avoid getting the same message repeatedly as we descend the stack.
@@ -299,7 +302,8 @@ def egyptian_stack_search(weight: List[int], capacity: int, max_score: int=1_000
                     # update cum_sum, to accelerate the search
                     # don't need to find other solutions with same score, so use best_score-1
                     cum_sum = end_capacity_(weights, best_score-1) 
-                    print(f"Best score = {score}")
+                    if verbose:
+                        print(f"Best score = {score}")
                     #active_dens = [dens[i] for i in range(len(active)) if active[i]==1]
                     #print(active_dens)
                 active[new_start] = 0
@@ -351,7 +355,8 @@ def egyptian_stack_search(weight: List[int], capacity: int, max_score: int=1_000
                             # update cum_sum, to accelerate the search
                             # don't need to find other solutions with same score, so use best_score-1
                             cum_sum = end_capacity_(weights, best_score-1) 
-                            print(f"Best score = {score}")
+                            if verbose:
+                                print(f"Best score = {score}")
                             #active_dens = [dens[i] for i in range(len(active)) if active[i]==1]
                             #print(active_dens)
 
@@ -384,7 +389,8 @@ def egyptian_stack_search(weight: List[int], capacity: int, max_score: int=1_000
             cur_target += weights[search_current[sp]]
             #print(f"Exiting backtrack with sp={sp}, new_range: i={search_current[sp]}, range={search_start[sp]}:{search_stop[sp]}")
     if num_backtracks>=max_tries:
-        print("Reached max_tries, aborting search.")
+        if verbose:
+            print("Reached max_tries, aborting search.")
     error_code = 0
     if best_score>=max_score:
         error_code = 1
@@ -512,28 +518,165 @@ def reciprocal_pal_stack_search(weight: List[int], capacity: int, max_score: int
         return(best_score,[], 1) # no hits
 
 
+def least_conflicting_palindrome_tuple_(N: int, conflict_list)-> Tuple[int, ...]:
+    palindrome_sum = []
+    if is_palindromic(N):
+        palindrome_sum.append(N)
+    if palindrome.has_palindromic_bipartition(N):
+        for x in palindrome.pal_bipartition_iterator(N):
+            if len(set(x)) == len(x): # repetitions are not allowed
+                palindrome_sum.append(x)
+    else:
+        for x in palindrome.pal_tripartition_iterator(N):
+            if len(set(x)) == len(x): # repetitions are not allowed
+                palindrome_sum.append(x)
+    least_conflicts = 4
+    best_candidate = palindrome_sum[0]
+    for palindromes in palindrome_sum:
+        num_conflicts = 0
+        for x in palindromes:
+            if x in conflict_list:
+                num_conflicts += 1
+        if num_conflicts<least_conflicts:
+            best_candidate = palindromes
+            least_conflicts = num_conflicts
+    return(best_candidate)
 
-def weights_from_palindrome_r(seed_value: int, r: Rational)-> Tuple[int, List[int], List[int]]:
+
+class ProblemWrapper:
+    def __init__(self, capacity: int, weight: List[int], div_list: List[int], palindrome_tuple: Tuple[int, ...], seed_value: int = -1):
+        self.capacity = capacity
+        self.weight = weight
+        self.div_list = div_list
+        self.palindrome_tuple = palindrome_tuple
+        self.seed_value = seed_value
+
+def weights_from_number_r(seed_value: int, r: Rational)-> ProblemWrapper:
     """
-    Given a seed value generate a set of palindrome denominators to use for the search.  The weight
+    Given a number/seed value generate a set of palindrome denominators to use for the search.  The weight
     vector and the target can be used with the knapsack and stack_search optimization routines, and
     the div_list contains the palindromes needed to reconstruct the reciprocal palindromic representation.
     """
-    return weights_from_palindrome(seed_value, int(r.p), int(r.q))
+    return weights_from_number(seed_value, int(r.p), int(r.q))
 
 
-def weights_from_palindrome(seed_value: int, p: int, q: int)-> Tuple[int, List[int], List[int]]:
+def weights_from_number(seed_value: int, p: int, q: int)-> ProblemWrapper:
     """
-    Given a seed value generate a set of palindrome denominators to use for the search for a representation
+    Given a number/seed value generate a set of palindrome denominators to use for the search for a representation
     for the rational p/q.  The weight vector and the target can be used with the knapsack and stack_search 
     optimization routines, and the div_list contains the palindromes needed to reconstruct the reciprocal 
     palindromic representation.
+
+    USAGE: capacity, weight, div_list, palindrome_tuple = weights_from_number(seed_value, p, q)
     """
     min_value = q // p
     div_list = list(palindrome.palindrome_divisors(seed_value, min_value))
-    weight = [ seed_value // x for x in div_list ]
     capacity = (seed_value*p) // q
+    palindrome_tuple = tuple()
     if p>q:
-        pass
+        N = p // q # integer portion of fraction
+        # First off avoid fractions 1/1 that can just be written as 1.
+        # By convention we put 1 in the palindrome portion of the solver
+        if 1 in div_list:
+            div_list.remove(1)
+        palindrome_tuple = least_conflicting_palindrome_tuple_(N, div_list)
+        for x in palindrome_tuple:
+            if x in div_list:
+                div_list.remove(x)
+        weight = [seed_value*p for p in palindrome_tuple[::-1]]+[ seed_value // x for x in div_list ]
+    else:
+        weight = [ seed_value // x for x in div_list ]
+    return(ProblemWrapper(capacity, weight, div_list, palindrome_tuple[::-1], seed_value))
 
-    return(capacity, weight, div_list)
+
+def palindrome_seed_iterator_r(r: Rational, start_search: int=-1, end_search: int=10**12, 
+                               min_num_divisors: int=4, max_num_divisors=48, 
+                               step_size: int=-1, num_pals2: int=-1,
+                                num_pals5: int=-1, verbose: bool=True) -> Iterator[ProblemWrapper]:
+    for i in palindrome_seed_iterator(int(r.p), int(r.q), start_search, end_search,
+                                       min_num_divisors, max_num_divisors, step_size,
+                                       num_pals2, num_pals5, verbose):
+        yield i
+
+
+def palindrome_seed_iterator(p: int, q:int, start_search: int, end_search: int, 
+                             min_num_divisors: int=4, max_num_divisors: int=48, 
+                             step_size: int=-1, num_pals2: int=-1,
+                             num_pals5: int=-1, verbose: bool=True) -> Iterator[ProblemWrapper]:
+    """
+    This function implements a fast version of the loop
+        for seed_value in palindrome.pal_div_iterator(step_size, start_search, end_search)
+            # some logic
+            yield problem_wrapper
+    However, there are complications when q is divisible by 10.
+    """
+    counter = 0 # for reporting progress
+    report_frequency = 1000
+    if step_size == -1:
+        step_size = q
+    assert(step_size%q == 0)
+    if start_search == -1:
+        start_search = q
+    if q%10 != 0:
+        for seed_value in palindrome.pal_div_iterator(step_size, start_search, end_search):
+            pw = weights_from_number(seed_value, p, q)
+            if len(pw.div_list)<min_num_divisors or len(pw.div_list)>max_num_divisors:
+                continue
+            if sum(pw.weight)<pw.capacity:
+                continue
+            counter += 1
+            if counter % report_frequency == 0:
+                if verbose:
+                    print(f"Tried {counter:_} seed values, currently at {int(seed_value):_}")
+            yield pw
+    else:
+        factors = factorint(step_size)
+        p2 = 2**factors[2]
+        p5 = 5**factors[5]
+
+        estimated_num_pals = int(math.sqrt(end_search-start_search)/q)
+        if num_pals2==-1:
+            num_pals2 = p5*int(math.sqrt(estimated_num_pals//(p2+p5)))
+        if num_pals5==-1:
+            num_pals5 = p2*int(math.sqrt(estimated_num_pals//(p2+p5)))
+        if verbose:
+            print(f"Using num_pals2={num_pals2}, num_pals5={num_pals5}.")
+        
+        step2 = step_size//p5
+        pal2_list = []
+        for k2 in palindrome.pal_div_iterator(step2, start_search, end_search):
+            div_list2 = list(palindrome.palindrome_divisors(k2, q))
+            if len(div_list2)>min_num_divisors and len(div_list2)<max_num_divisors:
+                pal2_list.append(k2)
+                if len(pal2_list)>=num_pals2:
+                    break
+        
+        step5 = step_size//p2
+        pal5_list = []
+        for k5 in palindrome.pal_div_iterator(step5, start_search, end_search):
+            div_list5 = list(palindrome.palindrome_divisors(k5, q))
+            if len(div_list5)>min_num_divisors and len(div_list5)<max_num_divisors:
+                pal5_list.append(k5)
+                if len(pal5_list)>=num_pals5:
+                    break
+        if verbose:
+            print(f"pal2_list: start={pal2_list[0]}, end={pal2_list[-1]}")
+            print(f"pal5_list: start={pal5_list[0]}, end={pal5_list[-1]}")
+
+        for k2 in pal2_list:
+            for k5 in pal5_list:
+                seed_value = sympy.lcm(k2, k5)
+                pw = weights_from_number(seed_value, p, q)
+                if len(pw.div_list)<min_num_divisors or len(pw.div_list)>max_num_divisors:
+                    continue
+                if sum(pw.weight)<pw.capacity:
+                    continue
+                counter += 1
+                if counter % report_frequency == 0:
+                    if verbose:
+                        print(f"Tried {counter:_} seed values, currently at {int(seed_value):_}")
+                        print(f"k2={k2:_}, k5={k5:_}")
+                yield pw
+
+
+    
