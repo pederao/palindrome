@@ -46,7 +46,7 @@ We have stored representations for each of the methods for unit fractions $\frac
 To discover reciprocal palindromic representations of fractions we need to solve problems of the form
 
 $$
-\min_{a}\sum_i a_i
+\min_{\mathbf{a}}\sum_i a_i
 $$
 
 subject to
