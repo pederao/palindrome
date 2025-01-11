@@ -46,7 +46,7 @@ We have stored representations for each of the methods for unit fractions $\frac
 To discover reciprocal palindromic representations of fractions we need to solve problems of the form
 
 $$
-\mathrm{min}_{\mathbf{a}}\sum_i a_i
+\min_{\mathbf{a}}\sum_i a_i
 $$
 
 subject to
@@ -55,7 +55,7 @@ $$
 \sum_i a_i w_i = t
 $$
 
-and $a_i\in \{0,1\}$ for all $i$, where $\mathbf{w}$ and $t$ are a prescribed vector of positive integers and $t$ a target sum.
+and $a_i\in \\{0,1\\}$ for all $i$, where $\mathbf{w}$ and $t$ are a prescribed vector of positive integers and $t$ a target sum.
 This type of problem belongs to the knapsack problem category which is known to be NP-complete.
 
 Alternatively, we also allow for the constraint alternative $a_i\in\{0,1,2,3,\ldots\}$ which is a linear diophantine equation, also known as an integer programming problem. The solvers are respectively:
