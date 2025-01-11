@@ -14,7 +14,7 @@ $$
 a_1+a_2+a_3+\sum_{i=4}^n \frac{1}{a_i}
 $$
 
-with $\left\\{a_i\right\\}_{i=1}^n$ being distinct palindromes. This code-base supports exploration of these statements.
+with $\left\\{a_i\right\\}_{i=1}^n$ being distinct palindromes and $a_1$, $a_2$ and $a_3$ possibly being the palindrome 0. This code-base supports exploration of these statements and the notebook `examples.ipynb` shows the various tools and how to use them.
 
 ## Palindrome module
 
@@ -40,6 +40,31 @@ This module contains two classes two store results and to record the discovery d
 Each of the classes provides the methods `load`, `save`, `add`, `display`, `latex` and `jupyter_display`. If you add a new entry with your own discovery it will only be added to the database if the representation is shorter than what is already in the dictionary and the json file. Thus you will not be accidentally overwriting other peoples credits unless your discovery is indeed a shorter representation.
 
 We have stored representations for each of the methods for unit fractions $\frac{1}{n}$ with $1\leq n\leq 1000$ and general fractions $\frac{p}{q}$ with $1\leq p,q\leq 100$.
+
+## Solver module
+
+To discover reciprocal palindromic representations of fractions we need to solve problems of the form
+
+$$
+\mathrm{min}_{\mathbf{a}}\sum_i a_i
+$$
+
+subject to
+
+$$
+\sum_i a_i w_i = t
+$$
+
+and $a_i\in \{0,1\}$ for all $i$, where $\mathbf{w}$ and $t$ are a prescribed vector of positive integers and $t$ a target sum.
+This type of problem belongs to the knapsack problem category which is known to be NP-complete.
+
+Alternatively, we also allow for the constraint alternative $a_i\in\{0,1,2,3,\ldots\}$ which is a linear diophantine equation, also known as an integer programming problem. The solvers are respectively:
+
+- `exact_knapsack`: A recursive solver for the exact knapsack problem.
+- `egyptian_stack_search`: A stack based solver for the exact knapsack problem.
+- `reciprocal_pal_stack_search`: A stack based solver for the corresponding linear integer programming problem.
+
+There are also two solvers in the palindrome module; namely `egyptian_pal_pair_iterator` and `reciprocal_pal_pair_iterator` that can work wonders for fractions with small denominators and can also be used to prove that there is no shorter representation.
 
 # Results so far
 

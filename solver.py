@@ -13,7 +13,7 @@ over a given weights [w_1, w_2, ..., w_n]
         or a_i in {0,1,2,3,...} with allowed repetition
 
 SOLVERS:
-    'exact_knapsack': A recursive solver for the exact knapsack problem.
+    `exact_knapsack`: A recursive solver for the exact knapsack problem.
     `egyptian_stack_search`: A stack based solver for the exact knapsack problem.
     `reciprocal_pal_stack_search`: A stack based solver for the corresponding linear integer programming problem.
 
@@ -592,17 +592,17 @@ def weights_from_number(seed_value: int, p: int, q: int)-> ProblemWrapper:
 def palindrome_seed_iterator_r(r: Rational, start_search: int=-1, end_search: int=10**12, 
                                min_num_divisors: int=4, max_num_divisors=48, 
                                step_size: int=-1, num_pals2: int=-1,
-                                num_pals5: int=-1, verbose: bool=True) -> Iterator[ProblemWrapper]:
+                                num_pals5: int=-1, verbose: bool=True, report_frequency: int=1000) -> Iterator[ProblemWrapper]:
     for i in palindrome_seed_iterator(int(r.p), int(r.q), start_search, end_search,
                                        min_num_divisors, max_num_divisors, step_size,
-                                       num_pals2, num_pals5, verbose):
+                                       num_pals2, num_pals5, verbose, report_frequency):
         yield i
 
 
 def palindrome_seed_iterator(p: int, q:int, start_search: int, end_search: int, 
                              min_num_divisors: int=4, max_num_divisors: int=48, 
                              step_size: int=-1, num_pals2: int=-1,
-                             num_pals5: int=-1, verbose: bool=True) -> Iterator[ProblemWrapper]:
+                             num_pals5: int=-1, verbose: bool=True, report_frequency: int=1000) -> Iterator[ProblemWrapper]:
     """
     This function implements a fast version of the loop
         for seed_value in palindrome.pal_div_iterator(step_size, start_search, end_search)
@@ -611,7 +611,6 @@ def palindrome_seed_iterator(p: int, q:int, start_search: int, end_search: int,
     However, there are complications when q is divisible by 10.
     """
     counter = 0 # for reporting progress
-    report_frequency = 1000
     if step_size == -1:
         step_size = q
     assert(step_size%q == 0)
