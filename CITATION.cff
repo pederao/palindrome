@@ -1,1 +1,31 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
 
+cff-version: 1.2.0
+title: Reciprocal Palindrome Representations
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Peder
+    family-names: Olsen
+    email: pederao@gmail.com
+    name-particle: Peder
+identifiers:
+  - type: url
+    value: 'https://github.com/pederao/palindrome'
+    description: Git repository
+repository-code: 'https://github.com/pederao/palindrome'
+abstract: >-
+  Every fraction can be written as a sum of reciprocal
+  palindromes and sometimes as an Egyptian palindromic
+  fraction.  This code provides software to explore such
+  representations and to support the conjecture that every
+  fraction can be written as a sum of finitely many distinct
+  reciprocal palindromes and no more than three palindromic
+  integers.
+keywords:
+  - 'palindrome, number theory, knapsack solver'
+version: '1.0'
+date-released: '2025-01-17'
