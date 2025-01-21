@@ -521,6 +521,8 @@ def pal_iterator(first: int, last: int) -> Iterator[int]:
     Iterate over palindromic integers in the range [first, last).
     USAGE:  `for n in pal_iterator(first, last):`
     """
+    if first==0:
+        yield 0
     nd1 = len(str(first))
     nd2 = len(str(last))+1
     for dd in range(nd1, nd2):
@@ -651,21 +653,19 @@ def pal_div_iterator(n: int, start: int, stop: int) -> Iterator[int]:
 
 def has_palindromic_bipartition(n: int) -> bool:
     """
-    Returns true if n = p1+p2 with p1>0 and p2>0 palindromes.  1 will return False, while 2 = 1+1 is a bipartition. 
+    Returns true if n = p1+p2 with p1>=0 and p2>=0 palindromes.  1 will return False, while 2 = 1+1 is a bipartition. 
     """
-    for p1 in pal_iterator(1,n//2):
+    for p1 in pal_iterator(0, 1+(n//2)):
         if is_palindromic(n-p1):
             return(True)
     return(False)
 
 def has_palindromic_tripartition(n: int) -> bool:
     """
-    Returns true if n = p1+p2+p2 with p1>0, p2>0 and p3>0 palindromes.  
+    Returns true if n = p1+p2+p2 with p1>=0, p2>=0 and p3>=0 palindromes.  
     Only 0, 1 and 2 has no tripartition. 
     """
-    if n>2:
-        return True
-    return False
+    return True
 
 
 def pal_bipartition_iterator(n: int) -> Iterator[Tuple[int, int]]:
@@ -673,7 +673,7 @@ def pal_bipartition_iterator(n: int) -> Iterator[Tuple[int, int]]:
     Generator for all partitions n = p1+p2 with 0<p1<=p2 and p1 and p2 being palindromes.
     Note that not all numbers have bipartite palindromic representations.
     """
-    for p1 in pal_iterator(1,n//2):
+    for p1 in pal_iterator(0,1+(n//2)):
         p2 = n-p1
         if is_palindromic(p2):
             yield(p1, p2)
@@ -684,8 +684,8 @@ def pal_tripartition_iterator(n: int) -> Iterator[Tuple[int, int, int]]:
     Generator for all partitions n = p1+p2+p3 with 0<p1<=p2<=p3 and p1, p2 and p3 being palindromes.
     Note that all integers larger than 2 can be partitioned into 3 palindromes in at least one way.
     """
-    for p1 in pal_iterator(1,n//2):
-        for p2 in pal_iterator(p1,(n-p1)//2):
+    for p1 in pal_iterator(0,1+(n//2)):
+        for p2 in pal_iterator(p1,1+((n-p1)//2)):
             p3 = n-p1-p2
             if is_palindromic(p3):
                 yield(p1, p2, p3)
