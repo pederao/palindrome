@@ -178,7 +178,7 @@ $$
 
 To motivate the core idea behind the solution methodologies we are going to try to write $1/14$ as a sum of reciprocal palindromes. We will start without worrying about the palindromes being distinct. So first we find palindromes that are multiples of $14$ as follows:
 
-```
+```python
 >>> list(palindrome.pal_div_iterator(14,14,1000))
 > [252, 434, 616, 686, 868]
 ```
@@ -222,7 +222,7 @@ $$
 
 This didn't get us below 18, but take a look at the remaining number $616=2^3\cdot 7\cdot 11$. We have:
 
-```
+```python
 >>> list(palindrome.palindrome_divisors(616, 14))
 > [22, 44, 77, 88, 616]
 ```
@@ -262,7 +262,7 @@ $11 = 6a_1+5a_2$ with the obvious solution $a_1=a_2=1$ giving $\frac{1}{30}=\fra
 
 Things are however, not always this straightforward, so let's consider a more complex example, so that the difficulties become more apparent. Consider $\frac{1}{60}$ with the factorization $60=2^2\cdot 3\cdot 5$ and let's look for palindromes that are multiples of $12=2^2\cdot 3$ and $15=3\cdot 5$ respectively with some shared factors. One such possibility is $252,252=2^2\cdot 3^2\cdot 7 \cdot 11\cdot 13$ and $585=3^2\cdot 5\cdot 13$. Next we calculate $\mathrm{lcm}(252252, 585) =1261260$ and we find all of its palindromic divisors larger than 60:
 
-```
+```python
 >>> list(palindrome.palindrome_divisors(1261260, 60))
 > [66, 77, 99, 252, 585, 858, 1001, 2002, 2772, 3003, 4004, 5005, 6006, 7007, 9009, 252252]
 ```
@@ -291,7 +291,7 @@ $$
 
 Just to double check that we can solve the knapsack problem, let's use our library function::
 
-```
+```python
 >>> import sympy, solver
 >>> x = [66, 77, 99, 252, 585, 858, 1001, 2002, 2772, 3003, 4004, 5005, 6006, 7007, 9009, 252252]
 >>> target = sympy.lcm(x)//60
@@ -303,7 +303,7 @@ Just to double check that we can solve the knapsack problem, let's use our libra
 
 We can now get the denominators back like so:
 
-```
+```python
 >>> [x[i] for i in range(len(a)) if a[i] > 0]
 > [77, 585, 858, 2772, 3003, 9009]
 ```
