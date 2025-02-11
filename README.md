@@ -133,7 +133,7 @@ Possibly for these numbers the issue is that the density of palindromes that are
 983
 ```
 
-In fact for a total of 59 of the trouble makers do we have that the order is greater than 100. The two smallest orders are 26 for 859 and 27 for 243. If we take a look at $10^26-1$ we can get a glimpse of why at least $10^{26}-1$ won't work as a base palindrome. The palindromic divisors of $10^{26}-1$ are:
+In fact for a total of 59 of the trouble makers do we have that the order is greater than 100. The two smallest orders are 26 for 859 and 27 for 243. If we take a look at $10^{26}-1$ we can get a glimpse of why at least $10^{26}-1$ won't work as a base palindrome. The palindromic divisors of $10^{26}-1$ are:
 
 ```
 9_449, 1_111_111_111_111, 3_333_333_333_333, 9_999_999_999_999, 10_000_000_000_001, 12_222_222_222_221, 30_000_000_000_003, 36_666_666_666_663, 90_000_000_000_009, 1_010_101_010_101_010_101_010_101, 3_030_303_030_303_030_303_030_303, 9_090_909_090_909_090_909_090_909, 11_111_111_111_111_111_111_111_111, 33_333_333_333_333_333_333_333_333, 99_999_999_999_999_999_999_999_999
