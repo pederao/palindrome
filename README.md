@@ -26,7 +26,7 @@ with $k$ a given number. If $p_1<p_2<\cdots<p_k$ we call the solution egyptian. 
 
 For example to find all egyptian palindromic representations of 1 with 5 terms:
 
-```
+```python
 for sol in palindrome.egyptian_pal_iterator_r(Rational(1,1),5):
     print(sol)
 ```
