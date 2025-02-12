@@ -14,7 +14,7 @@ $$
 a_1+a_2+a_3+\sum_{i=4}^n \frac{1}{a_i}
 $$
 
-with $\left\\{a_i\right\\}_{i=1}^n$ being distinct palindromes and $a_1$, $a_2$ and $a_3$ possibly being the palindrome 0. This code-base supports exploration of these statements and the notebook `examples.ipynb` shows the various tools and how to use them.
+with $\left\{a_i\right\}_{i=1}^n$ being distinct palindromes and $a_1$, $a_2$ and $a_3$ possibly being the palindrome 0. This code-base supports exploration of these statements and the notebook `examples.ipynb` shows the various tools and how to use them.
 
 ## Palindrome module
 
