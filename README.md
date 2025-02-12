@@ -251,7 +251,7 @@ When the constraint $a_i\in\{0,1\}$ is added, the problem becomes a knapsack pro
 
 ## Multiples of 10
 
-We hit a snag however when we try to use this approach with a number that is a multiple of 10, since no palindrome can be a multiple of 10. To get around this we need to split up the number such that the factors of 2 and 5 are separated. Now, $1\10$ itself is a really tough one, so we will start by looking at what happens to $1/30$. We write $30=5\times 6$ and look for palindromes that are multiples of 5 and 6 and are also larger than 30. The first such palindromes are $55$ and $66$. Let's try solving
+We hit a snag however when we try to use this approach with a number that is a multiple of 10, since no palindrome can be a multiple of 10. To get around this we need to split up the number such that the factors of 2 and 5 are separated. Now, $1/10$ itself is a really tough one, so we will start by looking at what happens to $1/30$. We write $30=5\times 6$ and look for palindromes that are multiples of 5 and 6 and are also larger than 30. The first such palindromes are $55$ and $66$. Let's try solving
 
 $$
 \frac{1}{30} = \frac{a_1}{55}+\frac{a_2}{66}.
