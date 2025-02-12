@@ -26,7 +26,7 @@ with $k$ a given number. If $p_1<p_2<\cdots<p_k$ we call the solution egyptian. 
 
 For example to find all egyptian palindromic representations of 1 with 5 terms:
 
-```
+```python
 for sol in palindrome.egyptian_pal_iterator_r(Rational(1,1),5):
     print(sol)
 ```
@@ -133,7 +133,7 @@ Possibly for these numbers the issue is that the density of palindromes that are
 983
 ```
 
-In fact for a total of 59 of the trouble makers do we have that the order is greater than 100. The two smallest orders are 26 for 859 and 27 for 243. If we take a look at $10^26-1$ we can get a glimpse of why at least $10^{26}-1$ won't work as a base palindrome. The palindromic divisors of $10^{26}-1$ are:
+In fact for a total of 59 of the trouble makers do we have that the order is greater than 100. The two smallest orders are 26 for 859 and 27 for 243. If we take a look at $10^{26}-1$ we can get a glimpse of why at least $10^{26}-1$ won't work as a base palindrome. The palindromic divisors of $10^{26}-1$ are:
 
 ```
 9_449, 1_111_111_111_111, 3_333_333_333_333, 9_999_999_999_999, 10_000_000_000_001, 12_222_222_222_221, 30_000_000_000_003, 36_666_666_666_663, 90_000_000_000_009, 1_010_101_010_101_010_101_010_101, 3_030_303_030_303_030_303_030_303, 9_090_909_090_909_090_909_090_909, 11_111_111_111_111_111_111_111_111, 33_333_333_333_333_333_333_333_333, 99_999_999_999_999_999_999_999_999
@@ -178,7 +178,7 @@ $$
 
 To motivate the core idea behind the solution methodologies we are going to try to write $1/14$ as a sum of reciprocal palindromes. We will start without worrying about the palindromes being distinct. So first we find palindromes that are multiples of $14$ as follows:
 
-```
+```python
 >>> list(palindrome.pal_div_iterator(14,14,1000))
 > [252, 434, 616, 686, 868]
 ```
@@ -222,7 +222,7 @@ $$
 
 This didn't get us below 18, but take a look at the remaining number $616=2^3\cdot 7\cdot 11$. We have:
 
-```
+```python
 >>> list(palindrome.palindrome_divisors(616, 14))
 > [22, 44, 77, 88, 616]
 ```
@@ -262,7 +262,7 @@ $11 = 6a_1+5a_2$ with the obvious solution $a_1=a_2=1$ giving $\frac{1}{30}=\fra
 
 Things are however, not always this straightforward, so let's consider a more complex example, so that the difficulties become more apparent. Consider $\frac{1}{60}$ with the factorization $60=2^2\cdot 3\cdot 5$ and let's look for palindromes that are multiples of $12=2^2\cdot 3$ and $15=3\cdot 5$ respectively with some shared factors. One such possibility is $252,252=2^2\cdot 3^2\cdot 7 \cdot 11\cdot 13$ and $585=3^2\cdot 5\cdot 13$. Next we calculate $\mathrm{lcm}(252252, 585) =1261260$ and we find all of its palindromic divisors larger than 60:
 
-```
+```python
 >>> list(palindrome.palindrome_divisors(1261260, 60))
 > [66, 77, 99, 252, 585, 858, 1001, 2002, 2772, 3003, 4004, 5005, 6006, 7007, 9009, 252252]
 ```
@@ -291,7 +291,7 @@ $$
 
 Just to double check that we can solve the knapsack problem, let's use our library function::
 
-```
+```python
 >>> import sympy, solver
 >>> x = [66, 77, 99, 252, 585, 858, 1001, 2002, 2772, 3003, 4004, 5005, 6006, 7007, 9009, 252252]
 >>> target = sympy.lcm(x)//60
@@ -303,7 +303,7 @@ Just to double check that we can solve the knapsack problem, let's use our libra
 
 We can now get the denominators back like so:
 
-```
+```python
 >>> [x[i] for i in range(len(a)) if a[i] > 0]
 > [77, 585, 858, 2772, 3003, 9009]
 ```
