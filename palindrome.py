@@ -653,7 +653,7 @@ def pal_div_iterator(n: int, start: int, stop: int) -> Iterator[int]:
 
 def has_palindromic_bipartition(n: int) -> bool:
     """
-    Returns true if n = p1+p2 with p1>=0 and p2>=0 palindromes.  1 will return False, while 2 = 1+1 is a bipartition. 
+    Returns true if n = p1+p2 with p1>=0 and p2>=0 palindromes.  
     """
     for p1 in pal_iterator(0, 1+(n//2)):
         if is_palindromic(n-p1):
@@ -663,7 +663,7 @@ def has_palindromic_bipartition(n: int) -> bool:
 def has_palindromic_tripartition(n: int) -> bool:
     """
     Returns true if n = p1+p2+p2 with p1>=0, p2>=0 and p3>=0 palindromes.  
-    Only 0, 1 and 2 has no tripartition. 
+    Actually, this is always true, so this function always returns true.
     """
     return True
 
