@@ -309,3 +309,6 @@ We can now get the denominators back like so:
 ```
 
 Glorious isn't it! Now the name of the game becomes how to make the choices to come up with the list for the palindromic denominators. Why did we for example choose 252,252 as the base palindrome for 12 and 585 as the base palindrome for 15? This was indeed done through some kind of brute force search, but maybe something smarter is possible?
+
+$$
+$$
