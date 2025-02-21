@@ -47,7 +47,7 @@ def exact_knapsack(weight: List[int], capacity: int, max_score: int=1_000_000, d
         sum_i a_i < max_score
     weight = [w_1, w_2, ..., w_n] is a list of integers, and the solution is
     given by the vector of active weights: active = [a_1, a_2, ..., a_n].  
-    The score upon succesful completion is set to sum_a a_i and otherwise to max_score.
+    The score upon successful completion is set to sum_a a_i and otherwise to max_score.
     
     USAGE: score, active, error_code = exact_knapsack(weight, capacity, max_score=50)
 
@@ -184,7 +184,7 @@ def egyptian_stack_search(weight: List[int], capacity: int, max_score: int=1_000
         sum_i a_i < max_score
     weight = [w_1, w_2, ..., w_n] is a list of integers, and the solution is
     given by the vector of active weights: active = [a_1, a_2, ..., a_n].  
-    The score upon succesful completion is set to sum_a a_i and otherwise to max_score.
+    The score upon successful completion is set to sum_a a_i and otherwise to max_score.
     
     USAGE: score, active, error_code = egyptian_stack_search(capacity, weights, max_score=1_000, max_tries=100_000_000)
 
@@ -416,8 +416,8 @@ def reciprocal_pal_stack_search(weight: List[int], capacity: int, max_score: int
         sum_i a_i < max_score
     weight = [w_1, w_2, ..., w_n] is a list of integers, and the solution is
     given by the vector of active weights: active = [a_1, a_2, ..., a_n].  
-    The score upon succesful completion is set to sum_i a_i and otherwise to max_score.
-    Also sum_i a_i * w_i = capacity if succesful.
+    The score upon successful completion is set to sum_i a_i and otherwise to max_score.
+    Also sum_i a_i * w_i = capacity if successful.
     
     USAGE: score, active, error_code = reciprocal_pal_stack_search(capacity, weights, max_score=-1, max_tries=100_000_000)
 
